@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 """ Place Module for HBNB project """
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Table
 from models.amenity import Amenity
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, Table
 from models.review import Review
 from sqlalchemy.orm import relationship
 from os import getenv
@@ -61,11 +61,14 @@ class Place(BaseModel, Base):
         price_by_night = Column(Integer, nullable=False, default=0)
         latitude = Column(Float, nullable=True)
         longitude = Column(Float, nullable=True)
-        amenities = relationship("Amenity", secondary=place_amenity,
-                                 viewonly=False,
-                                 back_populates="place_amenities")
+        place_amenities = relationship(
+            "Amenity",
+            secondary=place_amenity,
+            backref="places",
+        )
         reviews = relationship(
             "Review", backref="place", cascade="all, delete-orphan")
+        amenity_ids = []
 
     else:
         city_id = ""
@@ -82,7 +85,7 @@ class Place(BaseModel, Base):
 
     @property
     def amenities(self):
-        """Getter docuemnt"""
+        """Getter document"""
         from models import storage
         amenitiesList = []
         amenitiesAll = storage.all(Amenity)
@@ -98,7 +101,7 @@ class Place(BaseModel, Base):
         reviewsList = []
         reviewsAll = storage.all(Review)
         for review in reviewsAll.values():
-            if review.place_id in self.id:
+            if review.place_id == self.id:
                 reviewsList.append(review)
         return reviewsList
 
