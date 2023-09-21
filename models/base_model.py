@@ -42,14 +42,20 @@ class BaseModel:
         models.storage.save()
 
     def to_dict(self):
-        """Convert instance into dict format"""
         dictionary = dict(self.__dict__)
         dictionary['__class__'] = self.__class__.__name__
-        dictionary['created_at'] = self.created_at.isoformat()
-        dictionary['updated_at'] = self.updated_at.isoformat()
-        if '_sa_instance-state' in dictionary:
+
+        if 'created_at' in dictionary and \
+                isinstance(dictionary['created_at'], datetime):
+            dictionary['created_at'] = dictionary['created_at'].isoformat()
+
+        if 'updated_at' in dictionary and \
+                isinstance(dictionary['updated_at'], datetime):
+            dictionary['updated_at'] = dictionary['updated_at'].isoformat()
+
+        if '_sa_instance_state' in dictionary:
             del dictionary['_sa_instance_state']
-        return dictionary
+        return dictionary        
 
     def delete(self):
         """ Deletes the current instance from storage """
