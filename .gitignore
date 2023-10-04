@@ -8,3 +8,8 @@ __pycache__/
 
 # OLD DATA STORAGE FILE
 file.json
+
+# server-related files
+0-transfer_file
+web01
+web02
