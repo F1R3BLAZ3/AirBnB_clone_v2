@@ -16,18 +16,16 @@ def do_deploy(archive_path):
         return False
     try:
         filename = archive_path.split("/")[-1]
-        filetype = filename.split(".")[0]
-        directory = "/data/web_static/releases/{}/".format(filetype)
-
+        filetype = file_n.split(".")[0]
+        directory = "/data/web_static/releases/"
         put(archive_path, '/tmp/')
-        run('mkdir -p {}'.format(directory))
-        run('tar -xzf /tmp/{} -C {}'.format(filename, directory))
+        run('mkdir -p {}{}/'.format(directory, filetype))
+        run('tar -xzf /tmp/{} -C {}{}/'.format(filename, directory, filetype))
         run('rm /tmp/{}'.format(filename))
-        run('mv {}web_static/* {}'.format(directory, directory))
-        run('rm -rf {}web_static'.format(directory))
+        run('mv {0}{1}/web_static/* {0}{1}/'.format(directory, filetype))
+        run('rm -rf {}{}/web_static'.format(directory, filetype))
         run('rm -rf /data/web_static/current')
-        run('ln -s {} /data/web_static/current'.format(directory))
+        run('ln -s {}{}/ /data/web_static/current'.format(directory, filetype))
         return True
-    except Exception as e:
-        print("Error:", str(e))
+    except:
         return False
