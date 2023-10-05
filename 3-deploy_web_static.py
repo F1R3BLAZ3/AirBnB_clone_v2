@@ -1,73 +1,107 @@
-from fabric.api import *
+#!/usr/bin/python3
+from fabric.api import local, env, put, run
 from os.path import exists
-import time
+from datetime import datetime
+from pathlib import Path
+"""
+    Package and deploy the web application to the web servers.
+    """
 
-env.hosts = ['34.237.91.138', '34.203.38.155']
+
+# Define the target hosts and SSH username
+env.hosts = ['100.26.167.18', '54.175.189.193']
+env.user = 'ubuntu'
+
 
 def do_pack():
     """
-    Generates a .tgz archive from the contents of the web_static folder
+    Create a compressed archive of the web_static directory.
+
+    This function creates a timestamped compressed archive of the
+    "web_static" directory and stores it in the "versions" directory.
+
+    Returns:
+        str: The path to the created archive, or None on failure.
     """
+    try:
+        # Create a "versions" directory if it doesn't exist
+        local("mkdir -p versions")
 
-    # Create the versions directory if it doesn't exist
-    local("mkdir -p versions")
+        # Get the current timestamp
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d%H%M%S")
 
-    # Create a timestamped filename
-    t = time.strftime("%Y%m%d%H%M%S", time.gmtime())
-    filename = "versions/web_static_{}.tgz".format(t)
+        # Define the archive name
+        archive_name = "web_static_" + timestamp + ".tgz"
 
-    # Use tar to create the archive
-    result = local("tar -cvzf {} web_static".format(filename))
+        # Create the compressed archive
+        local("tar -czvf versions/{} web_static".format(archive_name))
 
-    # Return the archive path if successful, otherwise None
-    return filename if result.succeeded else None
+        archive_path = "versions/{}".format(archive_name)
+        if exists(archive_path):
+            return archive_path
+        return None
+    except Exception:
+        return None
+
 
 def do_deploy(archive_path):
     """
-    Distributes an archive to web servers
-    """
+    Deploy a web application archive to the web servers.
 
-    # Check if the file at the path archive_path exists
+    This function uploads a web application archive to the web servers,
+    extracts it to the appropriate directory, and updates symbolic links.
+
+    Args:
+        archive_path (str): The path to the archive file on the local machine.
+
+    Returns:
+        bool: True if deployment is successful, False otherwise.
+    """
     if not exists(archive_path):
         return False
 
     try:
-        # Upload the archive to the /tmp/ directory of the web server
+        # Upload the archive to /tmp/ on the web servers
         put(archive_path, "/tmp/")
-        
-        # Get the file name without extension
-        file_name = archive_path.split("/")[-1]
-        name = file_name.replace(".tgz", "")
-        
-        # Uncompress the archive to the folder /data/web_static/releases/
-        run("mkdir -p /data/web_static/releases/{}/".format(name))
-        run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/".format(file_name, name))
-        
-        # Delete the archive from the web server
-        run("rm /tmp/{}".format(file_name))
-        
-        # Delete the symbolic link /data/web_static/current from the web server
-        run("rm -rf /data/web_static/current")
-        
-        # Create a new symbolic link /data/web_static/current on the web server
-        run("ln -s /data/web_static/releases/{}/ /data/web_static/current".format(name))
-        
+
+        # Extract the archive to /data/web_static/releases/<archive_basename>
+        archive_filename = archive_path.split("/")[-1]
+        archive_basename = Path(archive_filename).stem
+        release_dir = "/data/web_static/releases/{}".format(archive_basename)
+        run("mkdir -p {}".format(release_dir))
+        run("tar -xzf /tmp/{} -C {}".format(archive_filename, release_dir))
+
+        # Delete the uploaded archive from /tmp/
+        run("rm /tmp/{}".format(archive_filename))
+
+        # Remove the current symbolic link if it exists
+        current_link = "/data/web_static/current"
+        if exists(current_link):
+            run("rm {}".format(current_link))
+
+        # Create a new symbolic link to the new version
+        run("ln -s {} {}".format(release_dir, current_link))
+
+        print("New version deployed!")
         return True
-    except:
+    except Exception as e:
+        print("Deployment failed:", str(e))
         return False
+
 
 def deploy():
     """
-    Creates and distributes an archive to web servers
+    Package and deploy the web application to the web servers.
+
+    This function creates an archive of the web application and deploys it
+    to the web servers. It returns True if deployment is successful,
+    or False otherwise.
+
+    Returns:
+        bool: True if deployment is successful, False otherwise.
     """
-
-    # Call do_pack() and store the path of the created archive
     archive_path = do_pack()
-
-    # Return False if no archive has been created
-    if archive_path is None:
-        return False
-
-    # Call do_deploy() with the new path of the new archive
-    return do_deploy(archive_path)
-
+    if archive_path:
+        return do_deploy(archive_path)
+    return False
