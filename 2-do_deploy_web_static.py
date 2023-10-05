@@ -32,8 +32,7 @@ def do_deploy(archive_path):
         # Upload the archive to /tmp/ on the web servers
         put(archive_path, '/tmp/')
 
-        # Extract the archive to
-        # /data/web_static/releases/<archive_filename without extension>
+        # Extract the archive to /data/web_static/releases/
         archive_filename = os.path.basename(archive_path)
         release_dir = "/data/web_static/releases/{}".format(
             archive_filename.split('.')[0]
