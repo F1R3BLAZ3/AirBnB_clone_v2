@@ -23,7 +23,7 @@ fi
 sudo ln -s "$test_dir" "$current_dir"
 
 # Give ownership to the ubuntu user and group
-sudo chown -R ubuntu:ubuntu "$web_static_dir"
+sudo chown -hR ubuntu:ubuntu "$web_static_dir"
 
 # Update Nginx configuration
 config_file="/etc/nginx/sites-available/default"
