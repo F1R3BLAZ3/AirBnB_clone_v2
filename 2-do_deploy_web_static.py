@@ -4,7 +4,7 @@ Fabric script that distributes an archive to your web servers
 """
 
 
-from fabric.api import *
+from fabric.api import env, put, run, sudo
 import os
 
 env.hosts = ['100.26.167.18', '54.175.189.193']
@@ -13,44 +13,48 @@ env.user = 'ubuntu'
 
 def do_deploy(archive_path):
     """
-    Distributes an archive to your web servers.
+    Distributes an archive to web servers and deploys it.
 
-    This function uploads the given archive to your web servers, uncompresses
-    it, creates a symbolic link, and cleans up old releases.
+    This function uploads the specified archive to the web servers,
+    extracts it to the appropriate directory, creates a symbolic link
+    to the new version, and performs cleanup.
 
     Args:
-        archive_path (str): The path to the archive on your local machine.
+        archive_path (str): The path to the archive file on the local machine.
 
     Returns:
-        bool: True if successful, False otherwise.
+        bool: True if deployment is successful, False otherwise.
     """
     if not os.path.exists(archive_path):
         return False
 
     try:
-        archive_name = os.path.basename(archive_path)
-        archive_no_ext = os.path.splitext(archive_name)[0]
-
-        # Upload the archive to the /tmp/ directory of the web servers
+        # Upload the archive to /tmp/ on the web servers
         put(archive_path, '/tmp/')
 
-        # Create the release directory
-        run('mkdir -p /data/web_static/releases/{}'.format(archive_no_ext))
+        # Extract the archive to
+        # /data/web_static/releases/<archive_filename without extension>
+        archive_filename = os.path.basename(archive_path)
+        release_dir = "/data/web_static/releases/{}".format(
+            archive_filename.split('.')[0]
+        )
+        run("mkdir -p {}".format(release_dir))
+        run("tar -xzf /tmp/{} -C {}".format(archive_filename, release_dir))
 
-        # Uncompress the archive to the release directory
-        run('tar -xzf /tmp/{} -C /data/web_static/releases/{}/'
-            .format(archive_name, archive_no_ext))
+        # Delete the uploaded archive from /tmp/
+        run("rm /tmp/{}".format(archive_filename))
 
-        # Delete the archive from the web servers
-        run('rm /tmp/{}'.format(archive_name))
+        # Remove the current symbolic link if it exists
+        current_link = "/data/web_static/current"
+        if run("test -L {}".format(current_link)).succeeded:
+            run("rm {}".format(current_link))
 
-        # Delete the old symbolic link
-        run('rm -f /data/web_static/current')
+        # Create a new symbolic link to the new version
+        run("ln -s {} {}".format(release_dir, current_link))
 
-        # Create a new symbolic link to the new release
-        run('ln -s /data/web_static/releases/{}/ /data/web_static/current'
-            .format(archive_no_ext))
-
+        print("New version deployed!")
         return True
-    except Exception:
+
+    except Exception as e:
+        print("Deployment failed:", str(e))
         return False
