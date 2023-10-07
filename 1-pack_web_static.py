@@ -31,7 +31,7 @@ def do_pack():
         local("mkdir -p versions")
 
         # Create the compressed archive
-        local("tar -czvf versions/{} web_static".format(archive_name))
+        local("tar -czvf versions/{} -C web_static .".format(archive_name))
 
         # Return the path to the created archive
         return "versions/{}".format(archive_name)
