@@ -3,7 +3,7 @@
 This is a Flask web application with routes for displaying HTML pages.
 """
 
-from flask import Flask, render_template
+from flask import Flask, render_template, abort
 
 app = Flask(__name__)
 
@@ -56,7 +56,10 @@ def number_template(n):
     """
     Display an HTML page with a dynamic number inside an H1 tag.
     """
-    return render_template('5-number.html', n=n)
+    if int(n) == n:  # Check if it's an integer
+        return render_template('5-number.html', n=n)
+    else:
+        abort(404)  # Return a 404 error for non-integer values
 
 
 if __name__ == "__main__":
