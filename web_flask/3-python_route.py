@@ -34,6 +34,7 @@ def c_variable(text):
 
 
 @app.route('/python/<text>', strict_slashes=False)
+@app.route('/python/', strict_slashes=False)
 def python_variable(text="is_cool"):
     """
     Display "Python " followed by the value of the text variable.
