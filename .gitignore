@@ -2,6 +2,7 @@
 test_params_create
 main_delete.py
 .vscode/settings.json
+main.py
 
 # BYTE COMPLILED FILES
 __pycache__/

@@ -28,7 +28,8 @@ class BaseModel:
                 self.id = str(uuid.uuid4())
             if 'created_at' not in kwargs:
                 self.created_at = self.updated_at = datetime.utcnow()
-            del kwargs['__class__']
+            if '__class__' in kwargs:  # Check if '__class__' key exists in kwargs
+                del kwargs['__class__']  # Delete it if it exists
 
     def __str__(self):
         """Returns a string representation of the instance"""
@@ -39,7 +40,7 @@ class BaseModel:
         """Updates updated_at with current time when instance is changed"""
         from models import storage
         self.updated_at = datetime.now()
-        models.storage.save()
+        storage.save()
 
     def to_dict(self):
         dictionary = dict(self.__dict__)
@@ -55,7 +56,7 @@ class BaseModel:
 
         if '_sa_instance_state' in dictionary:
             del dictionary['_sa_instance_state']
-        return dictionary        
+        return dictionary
 
     def delete(self):
         """ Deletes the current instance from storage """
