@@ -12,7 +12,7 @@ class State(BaseModel, Base):
 
     if os.getenv('HBNB_TYPE_STORAGE') == 'db':
         name = Column(String(128), nullable=False)
-        cities_db = relationship(
+        cities = relationship(
             'City', back_populates='state',
             cascade='all, delete, delete-orphan')
 
@@ -23,5 +23,5 @@ class State(BaseModel, Base):
     def cities(self):
         """Getter attribute that returns the list of City objects from storage
         linked to the current State"""
-        city_instances = self.cities_db
+        city_instances = self.cities
         return [city for city in city_instances if city.state_id == self.id]
