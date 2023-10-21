@@ -28,8 +28,8 @@ class BaseModel:
                 self.id = str(uuid.uuid4())
             if 'created_at' not in kwargs:
                 self.created_at = self.updated_at = datetime.utcnow()
-            if '__class__' in kwargs:  # Check if '__class__' key exists in kwargs
-                del kwargs['__class__']  # Delete it if it exists
+            if '__class__' in kwargs:
+                del kwargs['__class__']
 
     def __str__(self):
         """Returns a string representation of the instance"""
@@ -60,4 +60,5 @@ class BaseModel:
 
     def delete(self):
         """ Deletes the current instance from storage """
-        models.storage.delete(self)
+        from models import storage
+        storage.delete(self)
