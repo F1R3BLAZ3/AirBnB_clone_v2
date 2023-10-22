@@ -6,15 +6,15 @@
 <BODY>
     <H1>States</H1>
     <UL>
-        {%- for state in all_states -%}
+        {% for state in all_states %}
         <LI>{{ state.id }}: <B>{{ state.name }}</B>
             <UL>
-                {%- for city in state_cities[state.id] -%}
+                {% for city in state_cities[state.id] %}
                 <LI>{{ city.id }}: <B>{{ city.name }}</B></LI>
-                {%- endfor -%}
+                {% endfor %}
             </UL>
         </LI>
-        {%- endfor -%}
+        {% endfor %}
     </UL>
 </BODY>
 </HTML>
