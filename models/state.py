@@ -21,7 +21,16 @@ class State(BaseModel, Base):
 
     @property
     def cities(self):
-        """Getter attribute that returns the list of City objects from storage
-        linked to the current State"""
-        city_instances = self.cities
-        return [city for city in city_instances if city.state_id == self.id]
+        """
+        Getter for the cities linked to the state
+        """
+        if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+            from models import storage
+            from models.city import City
+
+            # Get the related City objects using a list comprehension
+            city_instances = [city for city in storage.all(City).values() if city.state_id == self.id]
+            return city_instances
+        else:
+            # In case of FileStorage, you can keep the existing code
+            return [city for city in models.storage.all(models.City).values() if city.state_id == self.id]

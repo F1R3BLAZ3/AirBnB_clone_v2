@@ -20,10 +20,19 @@ def close_session(exception):
 @app.route('/cities_by_states', strict_slashes=False)
 def cities_by_states():
     """Display a list of states and their cities."""
-    all_states = sorted(list(storage.all(State).values()),
-                        key=lambda x: x.name)
-    return render_template('8-cities_by_states.html', all_states=all_states)
+    all_states = sorted(list(storage.all(State).values()), key=lambda x: x.name)
+
+    # Load related cities for each state
+    state_cities = {}
+    for state in all_states:
+        state_cities[state.id] = sorted(
+            [city for city in state.cities],
+            key=lambda city: city.name
+        )
+
+    return render_template('8-cities_by_states.html', all_states=all_states, state_cities=state_cities)
+
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
