@@ -20,7 +20,8 @@ def list_states_and_cities(state_id=None):
     if state_id:
         state = states.get(state_id)
 
-    return render_template('9-states.html', states=states.values(), state=state)
+    return render_template('9-states.html', states=states.values(),
+                           state=state)
 
 
 @app.teardown_appcontext
