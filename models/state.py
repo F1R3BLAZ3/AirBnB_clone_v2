@@ -29,8 +29,10 @@ class State(BaseModel, Base):
             from models.city import City
 
             # Get the related City objects using a list comprehension
-            city_instances = [city for city in storage.all(City).values() if city.state_id == self.id]
+            city_instances = [city for city in storage.all(City).values()
+                              if city.state_id == self.id]
             return city_instances
         else:
             # In case of FileStorage, you can keep the existing code
-            return [city for city in models.storage.all(models.City).values() if city.state_id == self.id]
+            return [city for city in models.storage.all(models.City).values()
+                    if city.state_id == self.id]
