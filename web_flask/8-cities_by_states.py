@@ -11,6 +11,12 @@ from models.city import City
 app = Flask(__name__)
 
 
+@app.teardown_appcontext
+def close_session(exception):
+    """Remove the current SQLAlchemy Session."""
+    storage.close()
+
+
 @app.route('/cities_by_states', strict_slashes=False)
 def cities_by_states():
     """Display a list of states and their cities."""
@@ -27,12 +33,6 @@ def cities_by_states():
 
     return render_template('8-cities_by_states.html',
                            all_states=all_states, state_cities=state_cities)
-
-
-@app.teardown_appcontext
-def close_session(exception):
-    """Remove the current SQLAlchemy Session."""
-    storage.close()
 
 
 if __name__ == "__main__":
